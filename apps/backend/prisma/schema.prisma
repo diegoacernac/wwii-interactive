@@ -1,0 +1,160 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EventCategory {
+  POLITICAL
+  MILITARY
+  CULTURAL
+  ECONOMIC
+}
+
+enum Theater {
+  EUROPEAN
+  EASTERN_FRONT
+  PACIFIC
+  NORTH_AFRICAN
+  MEDITERRANEAN
+  ATLANTIC
+  OTHER
+}
+
+enum Side {
+  ALLIED
+  AXIS
+  NEUTRAL
+}
+
+enum Victor {
+  ALLIED
+  AXIS
+  STALEMATE
+  INCONCLUSIVE
+}
+
+model Event {
+  id                String        @id @default(uuid()) @db.Uuid
+  title             String        @db.VarChar(500)
+  description       String?
+  eventDate         DateTime      @map("event_date") @db.Date
+  category          EventCategory
+  significanceLevel Int           @map("significance_level") @db.SmallInt
+  region            String?       @db.VarChar(100)
+  externalSourceId  String?       @unique @map("external_source_id") @db.VarChar(255)
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+
+  @@index([eventDate])
+  @@index([category])
+  @@map("events")
+}
+
+model Battle {
+  id                  String    @id @default(uuid()) @db.Uuid
+  name                String    @db.VarChar(300)
+  startDate           DateTime  @map("start_date") @db.Date
+  endDate             DateTime? @map("end_date") @db.Date
+  locationName        String    @map("location_name") @db.VarChar(200)
+  latitude            Float
+  longitude           Float
+  description         String?
+  theater             Theater
+  alliedCommander     String?   @map("allied_commander") @db.VarChar(200)
+  axisCommander       String?   @map("axis_commander") @db.VarChar(200)
+  alliedStrength      Int?      @map("allied_strength")
+  axisStrength        Int?      @map("axis_strength")
+  alliedCasualties    Int?      @map("allied_casualties")
+  axisCasualties      Int?      @map("axis_casualties")
+  civilianCasualties  Int?      @map("civilian_casualties")
+  victor              Victor?
+  strategicImportance String?   @map("strategic_importance")
+  narrative           String?   // relato largo (extracto de introducción de Wikipedia ES)
+  narrativeSourceUrl  String?   @map("narrative_source_url") @db.VarChar(500)
+  source              String    @default("curated") @db.VarChar(50)
+  sourceUrl           String?   @map("source_url") @db.VarChar(500)
+  externalSourceId    String?   @unique @map("external_source_id") @db.VarChar(255)
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  campaigns    CampaignBattle[]
+  participants BattleParticipant[]
+
+  @@index([startDate])
+  @@index([theater])
+  @@index([victor])
+  @@index([source])
+  @@map("battles")
+}
+
+model Campaign {
+  id               String    @id @default(uuid()) @db.Uuid
+  name             String    @db.VarChar(300)
+  startDate        DateTime  @map("start_date") @db.Date
+  endDate          DateTime? @map("end_date") @db.Date
+  description      String?
+  theater          Theater
+  objective        String?   @db.VarChar(500)
+  outcome          String?   @db.VarChar(200)
+  externalSourceId String?   @unique @map("external_source_id") @db.VarChar(255)
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  battles CampaignBattle[]
+
+  @@index([theater])
+  @@map("campaigns")
+}
+
+model CampaignBattle {
+  campaignId  String   @map("campaign_id") @db.Uuid
+  battleId    String   @map("battle_id") @db.Uuid
+  battleOrder Int?     @map("battle_order")
+  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  battle      Battle   @relation(fields: [battleId], references: [id], onDelete: Cascade)
+
+  @@id([campaignId, battleId])
+  @@map("campaign_battles")
+}
+
+model Person {
+  id               String    @id @default(uuid()) @db.Uuid
+  fullName         String    @map("full_name") @db.VarChar(300)
+  birthDate        DateTime? @map("birth_date") @db.Date
+  deathDate        DateTime? @map("death_date") @db.Date
+  birthPlace       String?   @map("birth_place") @db.VarChar(200)
+  nationality      String    @db.VarChar(100)
+  role             String    @db.VarChar(100)
+  side             Side
+  biography        String?
+  narrative        String?   // relato largo (extracto de introducción de Wikipedia ES)
+  narrativeSourceUrl String? @map("narrative_source_url") @db.VarChar(500)
+  photoUrl         String?   @map("photo_url") @db.VarChar(500)
+  rank             String?   @db.VarChar(100)
+  notablePositions String[]  @map("notable_positions")
+  keyAchievements  String[]  @map("key_achievements")
+  externalSourceId String?   @unique @map("external_source_id") @db.VarChar(255)
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  battles BattleParticipant[]
+
+  @@index([fullName])
+  @@index([side])
+  @@map("people")
+}
+
+model BattleParticipant {
+  battleId String @map("battle_id") @db.Uuid
+  personId String @map("person_id") @db.Uuid
+  role     String @db.VarChar(100)
+  battle   Battle @relation(fields: [battleId], references: [id], onDelete: Cascade)
+  person   Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@id([battleId, personId])
+  @@map("battle_participants")
+}

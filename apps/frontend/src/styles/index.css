@@ -1,0 +1,21 @@
+@import 'tailwindcss';
+@import 'leaflet/dist/leaflet.css';
+
+@theme {
+  --color-parchment: #f2ead9;
+  --color-khaki: #b5a642;
+  --color-olive: #5f6b3c;
+  --color-navy: #1b2838;
+  --color-steel: #2c3e50;
+  --color-allied: #3b82c4;
+  --color-axis: #c0503c;
+}
+
+body {
+  @apply bg-neutral-950 text-neutral-200 antialiased;
+  font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+.font-sans-ui {
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
