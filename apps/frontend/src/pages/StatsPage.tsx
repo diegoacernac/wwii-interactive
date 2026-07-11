@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api, formatNumber, THEATER_LABELS, type Victor } from '../api/client';
 import { useTheme } from '../theme';
+import { useCountUp } from '../hooks/useCountUp';
+import { CasualtyValue } from '../components/CasualtyValue';
 
 // Paletas validadas con el validador CVD: dark sobre #171717 (ΔE 66.4),
 // light sobre #fdfbf5 (ΔE 82.3); contraste ≥ 3:1 en ambos.
@@ -39,9 +40,9 @@ export function StatsPage() {
 
       {overview.data && (
         <div className="mt-4 grid gap-4 sm:grid-cols-3 font-sans-ui">
-          <StatTile label="Bajas aliadas (batallas registradas)" value={overview.data.casualties.allied} accent={ALLIED} />
-          <StatTile label="Bajas del Eje (batallas registradas)" value={overview.data.casualties.axis} accent={AXIS} />
-          <StatTile label="Bajas civiles (batallas registradas)" value={overview.data.casualties.civilian} accent={NEUTRAL} />
+          <StatTile label="Bajas aliadas (batallas registradas)" value={overview.data.casualties.allied} accent={ALLIED} commemorate />
+          <StatTile label="Bajas del Eje (batallas registradas)" value={overview.data.casualties.axis} accent={AXIS} commemorate />
+          <StatTile label="Bajas civiles (batallas registradas)" value={overview.data.casualties.civilian} accent={NEUTRAL} commemorate />
         </div>
       )}
 
@@ -69,36 +70,14 @@ export function StatsPage() {
   );
 }
 
-// Cuenta desde 0 hasta el valor con easing, una sola vez al montar.
-function useCountUp(target: number, durationMs = 1100): number {
-  const [value, setValue] = useState(0);
-  const raf = useRef<number>(0);
-  useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setValue(target);
-      return;
-    }
-    const start = performance.now();
-    const tick = (now: number) => {
-      const t = Math.min(1, (now - start) / durationMs);
-      const eased = 1 - Math.pow(1 - t, 3);
-      setValue(Math.round(target * eased));
-      if (t < 1) raf.current = requestAnimationFrame(tick);
-    };
-    raf.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf.current);
-  }, [target, durationMs]);
-  return value;
-}
-
-function StatTile({ label, value, accent }: { label: string; value: number; accent?: string }) {
+function StatTile({ label, value, accent, commemorate }: { label: string; value: number; accent?: string; commemorate?: boolean }) {
   const shown = useCountUp(value);
   return (
     <div className="anim-in card-lift rounded-lg border border-line bg-surface p-5">
       <p className="text-xs uppercase tracking-wider text-ink-mute">{label}</p>
       <p className="mt-2 text-3xl font-bold text-ink tabular-nums">
         {accent && <span className="mr-2 inline-block h-3 w-3 rounded-sm align-baseline" style={{ background: accent }} />}
-        {formatNumber(shown)}
+        {commemorate ? <CasualtyValue value={value} display={formatNumber(shown)} /> : formatNumber(shown)}
       </p>
     </div>
   );

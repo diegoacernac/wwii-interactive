@@ -81,6 +81,18 @@ Rellena `Person.photoUrl` y `Battle.imageUrl` con la imagen principal del
 artículo de Wikipedia (API pageimages, servidas desde Wikimedia Commons).
 Requiere haber corrido antes `enrich:narratives`. `data:all` ya incluye ambos.
 
+## Experiencia y efectos
+
+- **Home/hero** en `/` con imagen histórica, contadores animados (count-up) y accesos.
+- **Cronología con scroll-reveal**: cada evento aparece con fade-up al entrar en viewport (IntersectionObserver).
+- **Mapa con flechas de frentes**: arcos animados de las grandes ofensivas (Barbarroja, Overlord, Bagratión…) que aparecen según el año del cursor temporal.
+- **Campañas con scrollytelling** (`/campanas/:id`): mapa fijo que vuela (`flyTo`) de batalla en batalla mientras haces scroll.
+- **Grafo de relaciones** (`/relaciones`): fuerza D3 entre personajes que compartieron batalla; foto como nodo, color por bando, línea punteada entre bandos opuestos. Endpoint `GET /api/v1/people/graph`.
+- **Modo conmemorativo**: las cifras de bajas muestran equivalencias tangibles al pasar el cursor.
+- **Fotos históricas** en sepia que revelan color al hover.
+- **Transiciones de página** (View Transitions API) y **textura de papel** en modo claro.
+- Todos los efectos respetan `prefers-reduced-motion`.
+
 ## Tema claro/oscuro
 
 La UI usa tokens semánticos (CSS variables + Tailwind v4 `@theme inline`) con dos

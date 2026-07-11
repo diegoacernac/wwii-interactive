@@ -3,11 +3,12 @@ import { GlobalSearch } from './GlobalSearch';
 import { useTheme } from '../theme';
 
 const links = [
-  { to: '/', label: 'Cronología' },
+  { to: '/cronologia', label: 'Cronología' },
   { to: '/mapa', label: 'Mapa' },
   { to: '/batallas', label: 'Batallas' },
   { to: '/campanas', label: 'Campañas' },
   { to: '/personas', label: 'Personajes' },
+  { to: '/relaciones', label: 'Relaciones' },
   { to: '/estadisticas', label: 'Estadísticas' },
 ];
 
@@ -16,7 +17,7 @@ export function Layout() {
     <div className="min-h-screen flex flex-col">
       <header className="sticky top-0 z-[1100] border-b border-line bg-bg/90 backdrop-blur">
         <div className="mx-auto max-w-7xl px-4 py-3 flex flex-wrap items-center gap-4">
-          <NavLink to="/" className="flex items-baseline gap-2">
+          <NavLink to="/" viewTransition className="flex items-baseline gap-2">
             <span className="text-xl font-bold tracking-wide text-heading">WWII</span>
             <span className="text-sm text-khaki font-sans-ui uppercase tracking-widest">Interactive</span>
           </NavLink>
@@ -25,7 +26,7 @@ export function Layout() {
               <NavLink
                 key={l.to}
                 to={l.to}
-                end={l.to === '/'}
+                viewTransition
                 className={({ isActive }) =>
                   `px-3 py-1.5 rounded transition-colors ${
                     isActive ? 'bg-olive text-white' : 'text-ink-dim hover:text-ink hover:bg-surface-2'

@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import { api, formatDate, formatNumber, THEATER_LABELS, VICTOR_LABELS, type Theater } from '../api/client';
 import { useMapTiles } from '../theme';
+import { FrontArrows } from '../components/FrontArrows';
 
 const THEATER_COLORS: Record<Theater, string> = {
   EUROPEAN: '#3b82c4',
@@ -46,6 +47,7 @@ export function MapPage() {
   const tiles = useMapTiles();
   const [searchParams] = useSearchParams();
   const [theater, setTheater] = useState<Theater | ''>('');
+  const [showArrows, setShowArrows] = useState(true);
   const [playing, setPlaying] = useState(false);
   const [speedMs, setSpeedMs] = useState(SPEEDS[1].ms);
   const [cursor, setCursor] = useState<number | null>(null); // month index; null until data loads
@@ -122,6 +124,10 @@ export function MapPage() {
           </p>
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-3 font-sans-ui text-sm">
+          <label className="flex cursor-pointer items-center gap-2 text-ink-dim">
+            <input type="checkbox" checked={showArrows} onChange={(e) => setShowArrows(e.target.checked)} className="accent-khaki" />
+            Flechas de frentes
+          </label>
           <select
             value={theater}
             onChange={(e) => setTheater(e.target.value as Theater | '')}
@@ -182,6 +188,9 @@ export function MapPage() {
               </CircleMarker>
             );
           })}
+          {cursor != null && (
+            <FrontArrows visible={showArrows} upToYear={Math.floor(cursor / 12)} />
+          )}
         </MapContainer>
       </div>
 

@@ -138,12 +138,33 @@ export interface SearchResults {
   people: Pick<Person, 'id' | 'fullName' | 'role' | 'side' | 'nationality'>[];
 }
 
+export interface GraphNode {
+  id: string;
+  fullName: string;
+  side: Side;
+  role: string;
+  photoUrl: string | null;
+}
+
+export interface GraphLink {
+  source: string;
+  target: string;
+  battles: string[];
+  opposing: boolean;
+}
+
+export interface PeopleGraph {
+  nodes: GraphNode[];
+  links: GraphLink[];
+}
+
 export const api = {
   events: (params = '') => get<Paginated<WWIIEvent>>(`/events?pageSize=200${params}`),
   battles: (params = '') => get<Paginated<Battle>>(`/battles?pageSize=100${params}`),
   battle: (id: string) => get<BattleDetail>(`/battles/${id}`),
   people: (params = '') => get<Paginated<Person>>(`/people?pageSize=100${params}`),
   person: (id: string) => get<PersonDetail>(`/people/${id}`),
+  peopleGraph: () => get<PeopleGraph>('/people/graph'),
   campaigns: () => get<Paginated<Campaign>>('/campaigns'),
   campaign: (id: string) => get<CampaignDetail>(`/campaigns/${id}`),
   mapBattles: () => get<BattleGeoJSON>('/map/battles'),

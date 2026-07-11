@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api, CATEGORY_LABELS, formatDate, type EventCategory } from '../api/client';
+import { Reveal } from '../components/Reveal';
 
 const CATEGORY_COLORS: Record<EventCategory, string> = {
   MILITARY: 'bg-axis/20 text-axis border-axis/40',
@@ -63,12 +64,14 @@ export function TimelinePage() {
       {isLoading && <p className="text-ink-mute">Cargando cronología…</p>}
 
       <div className="space-y-12">
-        {byYear.map(({ year, events }, yi) => (
-          <section key={year} className="anim-in" style={{ '--stagger': `${Math.min(yi, 6) * 80}ms` } as React.CSSProperties}>
-            <h2 className="mb-6 text-5xl font-bold text-ghost select-none">{year}</h2>
+        {byYear.map(({ year, events }) => (
+          <section key={year}>
+            <Reveal>
+              <h2 className="mb-6 text-5xl font-bold text-ghost select-none">{year}</h2>
+            </Reveal>
             <ol className="relative border-l-2 border-line space-y-6 pl-6 ml-2">
               {events.map((e) => (
-                <li key={e.id} className="relative">
+                <Reveal as="li" key={e.id} className="relative">
                   <span
                     className={`absolute -left-[31px] top-1.5 h-3 w-3 rounded-full border-2 border-bg ${
                       e.significanceLevel >= 5 ? 'bg-khaki pulse-dot' : e.significanceLevel >= 4 ? 'bg-olive' : 'bg-ink-mute'
@@ -87,7 +90,7 @@ export function TimelinePage() {
                   </div>
                   <h3 className="mt-1 text-lg font-semibold text-ink">{e.title}</h3>
                   {e.description && <p className="mt-1 max-w-3xl text-sm leading-relaxed text-ink-dim">{e.description}</p>}
-                </li>
+                </Reveal>
               ))}
             </ol>
           </section>

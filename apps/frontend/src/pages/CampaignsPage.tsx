@@ -31,8 +31,17 @@ function CampaignCard({ id }: { id: string }) {
   return (
     <article className="anim-in card-lift rounded-lg border border-line bg-surface p-6">
       <div className="flex flex-wrap items-baseline gap-3">
-        <h2 className="text-2xl font-semibold text-ink">{c.name}</h2>
+        <Link to={`/campanas/${c.id}`} viewTransition className="group">
+          <h2 className="text-2xl font-semibold text-ink group-hover:text-heading">{c.name}</h2>
+        </Link>
         <span className="font-sans-ui text-xs uppercase tracking-wider text-khaki">{THEATER_LABELS[c.theater]}</span>
+        <Link
+          to={`/campanas/${c.id}`}
+          viewTransition
+          className="ml-auto font-sans-ui text-xs font-semibold text-khaki hover:underline"
+        >
+          Recorrido guiado en el mapa →
+        </Link>
       </div>
       <p className="mt-1 font-sans-ui text-sm text-ink-mute">
         {formatDate(c.startDate)} — {formatDate(c.endDate)}
