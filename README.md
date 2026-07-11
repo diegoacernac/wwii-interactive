@@ -106,6 +106,43 @@ resaltadas con un anillo claro. Controles de play/pausa, velocidad (0.5×–4×)
 scrubber manual. El estado es enlazable: `/mapa?at=1941-12` abre el mapa en
 diciembre de 1941.
 
+## Despliegue (Neon + Render, gasto cero)
+
+La app se despliega como **un solo servicio** (el backend Express sirve el
+frontend compilado, por eso el `/api/v1` relativo funciona sin CORS). La base de
+datos vive aparte en **Neon** (capa gratuita permanente) y la app en **Render**
+(servicio web gratuito). Archivos ya incluidos: [`Dockerfile`](Dockerfile) y
+[`render.yaml`](render.yaml).
+
+**1. Base de datos en Neon**
+
+Crea un proyecto en [neon.tech](https://neon.tech) (región cercana a la de Render,
+p. ej. US West). Copia la cadena de conexión **directa** — la que **no** contiene
+`-pooler` en el host. `prisma migrate deploy` usa advisory locks que no funcionan
+sobre el pooler de Neon, por eso se usa la directa.
+
+**2. Cargar los datos en Neon (una vez, desde local)**
+
+```bash
+cd apps/backend
+DATABASE_URL="postgresql://…neon.tech/…?sslmode=require" npm run data:all
+```
+
+`data:all` migra el esquema (tablas + extensión `unaccent`), siembra las 23
+batallas curadas + eventos + personas + campañas, importa ~390 batallas de
+Wikidata y las enriquece con relatos. Tarda ~2-3 min.
+
+**3. Desplegar la app en Render**
+
+1. Haz commit y push del repo (incluye `render.yaml` y `Dockerfile`).
+2. En Render: **New → Blueprint**, conecta el repo de GitHub; detecta `render.yaml`.
+3. Define la variable de entorno **`DATABASE_URL`** con la misma cadena directa de Neon.
+4. Deploy. Render construye el Dockerfile, corre `migrate:deploy` (idempotente) y arranca.
+
+> Capa gratuita: el servicio web de Render se duerme tras ~15 min de inactividad
+> (primer request en frío ~30-50 s), y Neon también se autosuspende. Suficiente
+> para una demo; para producción real, un plan de pago mantiene todo activo.
+
 ## Decisiones vs. el documento de arquitectura original
 
 - **Lat/lng como `Float`** en lugar de PostGIS: suficiente para pines en Leaflet; PostGIS se añade solo si se necesitan queries espaciales reales.

@@ -1,0 +1,20 @@
+# Render Blueprint — despliega la app desde el Dockerfile (un solo servicio:
+# el backend Express sirve también el frontend compilado).
+#
+# La base de datos PostgreSQL vive aparte en Neon (capa gratuita permanente).
+# En el dashboard de Render, define DATABASE_URL con la cadena de conexión
+# DIRECTA de Neon (la que NO contiene "-pooler"): prisma migrate deploy usa
+# advisory locks que no funcionan sobre el pooler de Neon.
+services:
+  - type: web
+    name: wwii-interactive
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false # se define manualmente en el dashboard (secreto)
