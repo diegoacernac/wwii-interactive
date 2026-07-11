@@ -10,9 +10,10 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "db:setup": "prisma migrate deploy && tsx prisma/seed.ts",
-    "data:all": "prisma migrate deploy && tsx prisma/seed.ts && tsx src/scripts/import-wikidata.ts && tsx src/scripts/enrich-narratives.ts",
+    "data:all": "prisma migrate deploy && tsx prisma/seed.ts && tsx src/scripts/import-wikidata.ts && tsx src/scripts/enrich-narratives.ts && tsx src/scripts/enrich-photos.ts",
     "import:wikidata": "tsx src/scripts/import-wikidata.ts",
-    "enrich:narratives": "tsx src/scripts/enrich-narratives.ts"
+    "enrich:narratives": "tsx src/scripts/enrich-narratives.ts",
+    "enrich:photos": "tsx src/scripts/enrich-photos.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

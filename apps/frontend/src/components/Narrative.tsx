@@ -13,13 +13,13 @@ export function Narrative({ text, sourceUrl }: NarrativeProps) {
 
   return (
     <section>
-      <div className="space-y-4 text-[15px] leading-relaxed text-neutral-300">
+      <div className="space-y-4 text-[15px] leading-relaxed text-ink-dim">
         {paragraphs.map((p, i) => (
           <p key={i}>{p}</p>
         ))}
       </div>
       {sourceUrl && (
-        <p className="mt-4 font-sans-ui text-xs text-neutral-500">
+        <p className="mt-4 font-sans-ui text-xs text-ink-mute">
           Relato:{' '}
           <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="text-khaki hover:underline">
             Wikipedia en español

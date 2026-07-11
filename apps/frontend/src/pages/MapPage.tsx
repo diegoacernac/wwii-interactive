@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import { api, formatDate, formatNumber, THEATER_LABELS, VICTOR_LABELS, type Theater } from '../api/client';
+import { useMapTiles } from '../theme';
 
 const THEATER_COLORS: Record<Theater, string> = {
   EUROPEAN: '#3b82c4',
@@ -42,6 +43,7 @@ function parseAtParam(at: string | null): number | null {
 }
 
 export function MapPage() {
+  const tiles = useMapTiles();
   const [searchParams] = useSearchParams();
   const [theater, setTheater] = useState<Theater | ''>('');
   const [playing, setPlaying] = useState(false);
@@ -113,8 +115,8 @@ export function MapPage() {
     <div>
       <div className="mb-6 flex flex-wrap items-end gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-parchment">Mapa de batallas</h1>
-          <p className="mt-1 text-neutral-400">
+          <h1 className="text-3xl font-bold text-heading">Mapa de batallas</h1>
+          <p className="mt-1 text-ink-dim">
             {visible.length} batallas
             {cursor != null && !atEnd ? ` hasta ${monthLabel(cursor)}` : ''} · el tamaño refleja las bajas.
           </p>
@@ -123,7 +125,7 @@ export function MapPage() {
           <select
             value={theater}
             onChange={(e) => setTheater(e.target.value as Theater | '')}
-            className="rounded border border-neutral-700 bg-neutral-900 px-3 py-1.5"
+            className="rounded border border-line bg-surface px-3 py-1.5"
           >
             <option value="">Todos los teatros</option>
             {theatersPresent.map((t) => (
@@ -135,11 +137,12 @@ export function MapPage() {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-neutral-800">
-        <MapContainer center={[30, 20]} zoom={3} style={{ height: '62vh', background: '#111' }} scrollWheelZoom>
+      <div className="anim-in overflow-hidden rounded-lg border border-line">
+        <MapContainer center={[30, 20]} zoom={3} style={{ height: '62vh', background: tiles.background }} scrollWheelZoom>
           <TileLayer
+            key={tiles.key}
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            url={tiles.url}
           />
           {visible.map((f) => {
             const p = f.properties;
@@ -152,7 +155,7 @@ export function MapPage() {
                 center={[f.geometry.coordinates[1], f.geometry.coordinates[0]]}
                 radius={isRecent ? radius + 3 : radius}
                 pathOptions={{
-                  color: isRecent ? '#f2ead9' : THEATER_COLORS[p.theater],
+                  color: isRecent ? (tiles.key === 'dark' ? '#f2ead9' : '#2b2416') : THEATER_COLORS[p.theater],
                   fillColor: THEATER_COLORS[p.theater],
                   fillOpacity: isRecent ? 0.85 : atEnd ? 0.5 : 0.32,
                   weight: isRecent ? 2.5 : 1,
@@ -184,10 +187,10 @@ export function MapPage() {
 
       {/* Temporal animation controls */}
       {range && cursor != null && (
-        <div className="mt-4 flex flex-wrap items-center gap-4 rounded-lg border border-neutral-800 bg-neutral-900/50 px-4 py-3 font-sans-ui">
+        <div className="mt-4 flex flex-wrap items-center gap-4 rounded-lg border border-line bg-surface px-4 py-3 font-sans-ui">
           <button
             onClick={() => (playing ? setPlaying(false) : play())}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-khaki text-neutral-950 transition-colors hover:bg-khaki/80"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-khaki text-bg transition-colors hover:bg-khaki/80"
             aria-label={playing ? 'Pausar' : 'Reproducir'}
           >
             {playing ? (
@@ -203,8 +206,8 @@ export function MapPage() {
           </button>
 
           <div className="w-32 shrink-0">
-            <div className="text-lg font-bold text-parchment tabular-nums">{monthLabel(cursor)}</div>
-            <div className="text-xs text-neutral-500">{visible.length} batallas visibles</div>
+            <div className="text-lg font-bold text-heading tabular-nums">{monthLabel(cursor)}</div>
+            <div className="text-xs text-ink-mute">{visible.length} batallas visibles</div>
           </div>
 
           <input
@@ -225,7 +228,7 @@ export function MapPage() {
                 key={s.label}
                 onClick={() => setSpeedMs(s.ms)}
                 className={`rounded px-2 py-1 text-xs transition-colors ${
-                  speedMs === s.ms ? 'bg-olive text-white' : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                  speedMs === s.ms ? 'bg-olive text-white' : 'bg-surface-2 text-ink-dim hover:bg-surface-2'
                 }`}
               >
                 {s.label}
@@ -238,14 +241,14 @@ export function MapPage() {
               setPlaying(false);
               setCursor(range.max);
             }}
-            className="shrink-0 rounded px-3 py-1.5 text-xs text-neutral-400 hover:bg-neutral-800 hover:text-white"
+            className="shrink-0 rounded px-3 py-1.5 text-xs text-ink-dim hover:bg-surface-2 hover:text-ink"
           >
             Ver todo
           </button>
         </div>
       )}
 
-      <div className="mt-4 flex flex-wrap gap-4 font-sans-ui text-xs text-neutral-400">
+      <div className="mt-4 flex flex-wrap gap-4 font-sans-ui text-xs text-ink-dim">
         {theatersPresent.map((t) => (
           <span key={t} className="flex items-center gap-1.5">
             <span className="inline-block h-3 w-3 rounded-full" style={{ background: THEATER_COLORS[t] }} />
@@ -253,7 +256,7 @@ export function MapPage() {
           </span>
         ))}
       </div>
-      {isLoading && <p className="mt-4 text-neutral-500">Cargando mapa…</p>}
+      {isLoading && <p className="mt-4 text-ink-mute">Cargando mapa…</p>}
     </div>
   );
 }

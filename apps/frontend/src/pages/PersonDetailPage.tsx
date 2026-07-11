@@ -11,25 +11,35 @@ export function PersonDetailPage() {
     enabled: !!id,
   });
 
-  if (isLoading) return <p className="text-neutral-500">Cargando biografía…</p>;
-  if (!p) return <p className="text-neutral-500">Personaje no encontrado.</p>;
+  if (isLoading) return <p className="text-ink-mute">Cargando biografía…</p>;
+  if (!p) return <p className="text-ink-mute">Personaje no encontrado.</p>;
 
   return (
     <div className="max-w-4xl">
       <Link to="/personas" className="font-sans-ui text-sm text-khaki hover:underline">
         ← Todos los personajes
       </Link>
-      <h1 className="mt-3 text-4xl font-bold text-parchment">{p.fullName}</h1>
-      <p className="mt-2 font-sans-ui text-sm text-neutral-400">
-        {p.rank ? `${p.rank} · ` : ''}
-        {p.role} · {p.nationality} · {SIDE_LABELS[p.side]}
-      </p>
-      <p className="font-sans-ui text-sm text-neutral-500">
-        {formatDate(p.birthDate)} — {formatDate(p.deathDate)}
-        {p.birthPlace ? ` · ${p.birthPlace}` : ''}
-      </p>
-
-      {p.biography && <p className="mt-6 text-lg leading-relaxed text-neutral-200">{p.biography}</p>}
+      <div className="anim-in mt-4 flex flex-wrap items-start gap-6">
+        {p.photoUrl && (
+          <img
+            src={p.photoUrl}
+            alt={p.fullName}
+            className="photo-historic h-40 w-32 rounded-lg border border-line object-cover object-top shadow-lg"
+          />
+        )}
+        <div className="min-w-0 flex-1">
+          <h1 className="text-4xl font-bold text-heading">{p.fullName}</h1>
+          <p className="mt-2 font-sans-ui text-sm text-ink-dim">
+            {p.rank ? `${p.rank} · ` : ''}
+            {p.role} · {p.nationality} · {SIDE_LABELS[p.side]}
+          </p>
+          <p className="font-sans-ui text-sm text-ink-mute">
+            {formatDate(p.birthDate)} — {formatDate(p.deathDate)}
+            {p.birthPlace ? ` · ${p.birthPlace}` : ''}
+          </p>
+          {p.biography && <p className="mt-4 text-lg leading-relaxed text-ink">{p.biography}</p>}
+        </div>
+      </div>
 
       {p.narrative && (
         <div className="mt-6">
@@ -39,9 +49,9 @@ export function PersonDetailPage() {
 
       <div className="mt-8 grid gap-6 sm:grid-cols-2">
         {p.notablePositions.length > 0 && (
-          <section className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-5">
+          <section className="rounded-lg border border-line bg-surface p-5">
             <h2 className="font-sans-ui text-sm font-bold uppercase tracking-wider text-khaki">Cargos destacados</h2>
-            <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-neutral-300">
+            <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-ink-dim">
               {p.notablePositions.map((pos) => (
                 <li key={pos}>{pos}</li>
               ))}
@@ -49,9 +59,9 @@ export function PersonDetailPage() {
           </section>
         )}
         {p.keyAchievements.length > 0 && (
-          <section className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-5">
+          <section className="rounded-lg border border-line bg-surface p-5">
             <h2 className="font-sans-ui text-sm font-bold uppercase tracking-wider text-khaki">Hitos</h2>
-            <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-neutral-300">
+            <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-ink-dim">
               {p.keyAchievements.map((a) => (
                 <li key={a}>{a}</li>
               ))}
@@ -62,16 +72,16 @@ export function PersonDetailPage() {
 
       {p.battles.length > 0 && (
         <section className="mt-8">
-          <h2 className="mb-3 text-xl font-semibold text-parchment">Batallas</h2>
+          <h2 className="mb-3 text-xl font-semibold text-heading">Batallas</h2>
           <ul className="space-y-2">
             {p.battles.map((bp) => (
               <li key={bp.battle.id}>
                 <Link
                   to={`/batallas/${bp.battle.id}`}
-                  className="flex flex-wrap items-baseline gap-x-3 rounded border border-neutral-800 bg-neutral-900/50 px-4 py-3 hover:border-khaki/50"
+                  className="flex flex-wrap items-baseline gap-x-3 rounded border border-line bg-surface px-4 py-3 hover:border-khaki/50"
                 >
-                  <span className="font-semibold text-neutral-100">{bp.battle.name}</span>
-                  <span className="font-sans-ui text-xs text-neutral-500">
+                  <span className="font-semibold text-ink">{bp.battle.name}</span>
+                  <span className="font-sans-ui text-xs text-ink-mute">
                     {formatDate(bp.battle.startDate)} · {THEATER_LABELS[bp.battle.theater]}
                     {bp.battle.victor ? ` · ${VICTOR_LABELS[bp.battle.victor]}` : ''}
                   </span>

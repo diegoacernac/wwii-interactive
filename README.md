@@ -71,6 +71,25 @@ nombre (curadas y personas), descarga los extractos en lotes y guarda también l
 URL de origen para la atribución CC BY-SA. Solo usa artículos en español; las
 batallas sin artículo ES conservan su descripción corta.
 
+### Fotos e imágenes históricas (opcional)
+
+```bash
+cd apps/backend && npm run enrich:photos
+```
+
+Rellena `Person.photoUrl` y `Battle.imageUrl` con la imagen principal del
+artículo de Wikipedia (API pageimages, servidas desde Wikimedia Commons).
+Requiere haber corrido antes `enrich:narratives`. `data:all` ya incluye ambos.
+
+## Tema claro/oscuro
+
+La UI usa tokens semánticos (CSS variables + Tailwind v4 `@theme inline`) con dos
+temas completos. El toggle está en el header; la preferencia se guarda en
+`localStorage` y por defecto sigue `prefers-color-scheme`. `?theme=light|dark`
+en la URL fuerza el tema (útil para compartir enlaces). El mapa cambia de tiles
+(CARTO dark/light) junto con el tema, y las paletas de los gráficos están
+validadas para daltonismo en ambos fondos.
+
 ## Estructura
 
 ```

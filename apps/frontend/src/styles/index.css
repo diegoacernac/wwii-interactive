@@ -1,21 +1,133 @@
 @import 'tailwindcss';
 @import 'leaflet/dist/leaflet.css';
 
-@theme {
-  --color-parchment: #f2ead9;
-  --color-khaki: #b5a642;
-  --color-olive: #5f6b3c;
-  --color-navy: #1b2838;
-  --color-steel: #2c3e50;
-  --color-allied: #3b82c4;
-  --color-axis: #c0503c;
+/* ── Tokens semánticos por tema ─────────────────────────────────────────── */
+:root {
+  /* Claro: papel de archivo, tinta sepia */
+  --t-bg: #f4f0e6;
+  --t-surface: #fdfbf5;
+  --t-surface-2: #ebe5d6;
+  --t-line: #ddd5c2;
+  --t-ink: #211d14;
+  --t-ink-dim: #4e473a;
+  --t-ink-mute: #857c69;
+  --t-ghost: #e3dcc9;
+  --t-heading: #2b2416;
+  --t-khaki: #8a7420;
+  --t-olive: #5f6b3c;
+  --t-allied: #2a78d6;
+  --t-axis: #c0392b;
+  --chart-grid: #ddd5c2;
+  --chart-ink: #4e473a;
+  --chart-mute: #857c69;
+  --chart-axis-line: #c8bfa9;
+}
+
+[data-theme='dark'] {
+  --t-bg: #0a0a0a;
+  --t-surface: #161616;
+  --t-surface-2: #232323;
+  --t-line: #2a2a2a;
+  --t-ink: #e5e5e5;
+  --t-ink-dim: #a3a3a3;
+  --t-ink-mute: #737373;
+  --t-ghost: #262626;
+  --t-heading: #f2ead9;
+  --t-khaki: #b5a642;
+  --t-olive: #6b7a44;
+  --t-allied: #3987e5;
+  --t-axis: #e66767;
+  --chart-grid: #2c2c2a;
+  --chart-ink: #c3c2b7;
+  --chart-mute: #898781;
+  --chart-axis-line: #383835;
+}
+
+@theme inline {
+  --color-bg: var(--t-bg);
+  --color-surface: var(--t-surface);
+  --color-surface-2: var(--t-surface-2);
+  --color-line: var(--t-line);
+  --color-ink: var(--t-ink);
+  --color-ink-dim: var(--t-ink-dim);
+  --color-ink-mute: var(--t-ink-mute);
+  --color-ghost: var(--t-ghost);
+  --color-heading: var(--t-heading);
+  --color-khaki: var(--t-khaki);
+  --color-olive: var(--t-olive);
+  --color-allied: var(--t-allied);
+  --color-axis: var(--t-axis);
 }
 
 body {
-  @apply bg-neutral-950 text-neutral-200 antialiased;
+  @apply bg-bg text-ink antialiased;
   font-family: 'Georgia', 'Times New Roman', serif;
+  transition: background-color 0.35s ease, color 0.35s ease;
 }
 
 .font-sans-ui {
   font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+/* ── Animaciones de entrada (respetando reduced-motion) ─────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .anim-in {
+    animation: fade-up 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--stagger, 0ms);
+  }
+  @keyframes pulse-dot {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--t-khaki) 55%, transparent);
+    }
+    60% {
+      box-shadow: 0 0 0 7px transparent;
+    }
+  }
+  .pulse-dot {
+    animation: pulse-dot 2.4s ease-out infinite;
+  }
+}
+
+/* Tarjetas con vida: elevación al pasar el cursor */
+.card-lift {
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
+}
+.card-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px -12px color-mix(in srgb, var(--t-ink) 28%, transparent);
+}
+
+/* Fotos históricas: sepia/gris que revela color al pasar el cursor */
+.photo-historic {
+  filter: grayscale(0.85) sepia(0.12) contrast(1.02);
+  transition: filter 0.45s ease, transform 0.45s ease;
+}
+.card-lift:hover .photo-historic,
+.photo-historic:hover {
+  filter: grayscale(0) sepia(0);
+}
+
+/* ── Popups de Leaflet acordes al tema ───────────────────────────────────── */
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: var(--t-surface);
+  color: var(--t-ink);
+  box-shadow: 0 8px 24px -8px rgb(0 0 0 / 0.45);
+}
+.leaflet-popup-content a {
+  color: var(--t-khaki);
+}
+.leaflet-container a.leaflet-popup-close-button {
+  color: var(--t-ink-mute);
 }

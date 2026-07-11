@@ -75,6 +75,7 @@ model Battle {
   strategicImportance String?   @map("strategic_importance")
   narrative           String?   // relato largo (extracto de introducción de Wikipedia ES)
   narrativeSourceUrl  String?   @map("narrative_source_url") @db.VarChar(500)
+  imageUrl            String?   @map("image_url") // imagen principal del artículo de Wikipedia
   source              String    @default("curated") @db.VarChar(50)
   sourceUrl           String?   @map("source_url") @db.VarChar(500)
   externalSourceId    String?   @unique @map("external_source_id") @db.VarChar(255)
@@ -133,7 +134,7 @@ model Person {
   biography        String?
   narrative        String?   // relato largo (extracto de introducción de Wikipedia ES)
   narrativeSourceUrl String? @map("narrative_source_url") @db.VarChar(500)
-  photoUrl         String?   @map("photo_url") @db.VarChar(500)
+  photoUrl         String?   @map("photo_url")
   rank             String?   @db.VarChar(100)
   notablePositions String[]  @map("notable_positions")
   keyAchievements  String[]  @map("key_achievements")

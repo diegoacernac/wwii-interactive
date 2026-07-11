@@ -1,24 +1,31 @@
+import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api, formatNumber, THEATER_LABELS, type Victor } from '../api/client';
+import { useTheme } from '../theme';
 
-// Validated for dark surface (#171717): CVD ΔE 66.4, contrast ≥ 3:1
-const ALLIED = '#3987e5';
-const AXIS = '#e66767';
-const NEUTRAL = '#898781';
-const GRID = '#2c2c2a';
-const INK_MUTED = '#898781';
-const INK = '#c3c2b7';
+// Paletas validadas con el validador CVD: dark sobre #171717 (ΔE 66.4),
+// light sobre #fdfbf5 (ΔE 82.3); contraste ≥ 3:1 en ambos.
+const PALETTES = {
+  dark: { allied: '#3987e5', axis: '#e66767', neutral: '#898781', grid: '#2c2c2a', ink: '#c3c2b7', mute: '#898781', axisLine: '#383835' },
+  light: { allied: '#2a78d6', axis: '#c0392b', neutral: '#857c69', grid: '#ddd5c2', ink: '#4e473a', mute: '#857c69', axisLine: '#c8bfa9' },
+} as const;
+
+function usePalette() {
+  const { theme } = useTheme();
+  return PALETTES[theme];
+}
 
 export function StatsPage() {
   const overview = useQuery({ queryKey: ['statsOverview'], queryFn: api.statsOverview });
   const byTheater = useQuery({ queryKey: ['casualtiesByTheater'], queryFn: api.casualtiesByTheater });
   const byYear = useQuery({ queryKey: ['battlesByYear'], queryFn: api.battlesByYear });
+  const { allied: ALLIED, axis: AXIS, neutral: NEUTRAL, ink: INK } = usePalette();
 
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-parchment">Estadísticas</h1>
-        <p className="mt-1 text-neutral-400">El coste humano y la escala del conflicto, según los datos de la plataforma.</p>
+        <h1 className="text-3xl font-bold text-heading">Estadísticas</h1>
+        <p className="mt-1 text-ink-dim">El coste humano y la escala del conflicto, según los datos de la plataforma.</p>
       </div>
 
       {overview.data && (
@@ -39,8 +46,8 @@ export function StatsPage() {
       )}
 
       <div className="mt-10 grid gap-8 lg:grid-cols-2">
-        <section className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-6">
-          <h2 className="font-sans-ui text-base font-semibold text-neutral-200">Bajas militares por teatro</h2>
+        <section className="rounded-lg border border-line bg-surface p-6">
+          <h2 className="font-sans-ui text-base font-semibold text-ink">Bajas militares por teatro</h2>
           <div className="mt-1 flex gap-4 font-sans-ui text-xs" style={{ color: INK }}>
             <LegendSwatch color={ALLIED} label="Aliados" />
             <LegendSwatch color={AXIS} label="Eje" />
@@ -48,12 +55,12 @@ export function StatsPage() {
           {byTheater.data && <TheaterChart data={byTheater.data} />}
         </section>
 
-        <section className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-6">
-          <h2 className="font-sans-ui text-base font-semibold text-neutral-200">Batallas por año y vencedor</h2>
+        <section className="rounded-lg border border-line bg-surface p-6">
+          <h2 className="font-sans-ui text-base font-semibold text-ink">Batallas por año y vencedor</h2>
           <div className="mt-1 flex gap-4 font-sans-ui text-xs" style={{ color: INK }}>
             <LegendSwatch color={ALLIED} label="Victoria aliada" />
             <LegendSwatch color={AXIS} label="Victoria del Eje" />
-            <LegendSwatch color={NEUTRAL} label="Otro resultado" />
+            <LegendSwatch color={NEUTRAL} label="Otro / sin dato" />
           </div>
           {byYear.data && <YearChart data={byYear.data} />}
         </section>
@@ -62,13 +69,36 @@ export function StatsPage() {
   );
 }
 
+// Cuenta desde 0 hasta el valor con easing, una sola vez al montar.
+function useCountUp(target: number, durationMs = 1100): number {
+  const [value, setValue] = useState(0);
+  const raf = useRef<number>(0);
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setValue(target);
+      return;
+    }
+    const start = performance.now();
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / durationMs);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setValue(Math.round(target * eased));
+      if (t < 1) raf.current = requestAnimationFrame(tick);
+    };
+    raf.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf.current);
+  }, [target, durationMs]);
+  return value;
+}
+
 function StatTile({ label, value, accent }: { label: string; value: number; accent?: string }) {
+  const shown = useCountUp(value);
   return (
-    <div className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-5">
-      <p className="text-xs uppercase tracking-wider text-neutral-500">{label}</p>
-      <p className="mt-2 text-3xl font-bold text-neutral-100">
+    <div className="anim-in card-lift rounded-lg border border-line bg-surface p-5">
+      <p className="text-xs uppercase tracking-wider text-ink-mute">{label}</p>
+      <p className="mt-2 text-3xl font-bold text-ink tabular-nums">
         {accent && <span className="mr-2 inline-block h-3 w-3 rounded-sm align-baseline" style={{ background: accent }} />}
-        {formatNumber(value)}
+        {formatNumber(shown)}
       </p>
     </div>
   );
@@ -84,6 +114,7 @@ function LegendSwatch({ color, label }: { color: string; label: string }) {
 }
 
 function TheaterChart({ data }: { data: { theater: keyof typeof THEATER_LABELS; allied: number; axis: number }[] }) {
+  const { allied: ALLIED, axis: AXIS, grid: GRID, ink: INK, mute: INK_MUTED } = usePalette();
   const rows = [...data].sort((a, b) => b.allied + b.axis - (a.allied + a.axis));
   const max = Math.max(...rows.flatMap((r) => [r.allied, r.axis]));
   const W = 520;
@@ -126,6 +157,7 @@ function TheaterChart({ data }: { data: { theater: keyof typeof THEATER_LABELS; 
 }
 
 function YearChart({ data }: { data: { year: number; victor: Victor | null; count: number }[] }) {
+  const { allied: ALLIED, axis: AXIS, neutral: NEUTRAL, grid: GRID, ink: INK, mute: INK_MUTED, axisLine: AXIS_LINE } = usePalette();
   const years = [...new Set(data.map((d) => d.year))].sort();
   const stacks = years.map((year) => {
     const rows = data.filter((d) => d.year === year);
@@ -143,9 +175,16 @@ function YearChart({ data }: { data: { year: number; victor: Victor | null; coun
   const barW = Math.min(40, band * 0.55);
   const scale = (n: number) => (n / max) * plotH;
 
+  // ~4 gridlines con paso "bonito" (1, 2, 5 × 10^k), sea max 6 o 600.
+  const rawStep = max / 4;
+  const pow = Math.pow(10, Math.floor(Math.log10(rawStep)));
+  const step = [1, 2, 2.5, 5, 10].map((m) => m * pow).find((s) => s >= rawStep) ?? pow * 10;
+  const ticks: number[] = [];
+  for (let n = step; n <= max; n += step) ticks.push(n);
+
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="mt-4 w-full font-sans-ui" role="img" aria-label="Batallas por año según el vencedor">
-      {[...Array(max + 1).keys()].filter((n) => n > 0 && n % 2 === 0).map((n) => (
+      {ticks.map((n) => (
         <g key={n}>
           <line x1={padL} y1={H - padB - scale(n)} x2={W} y2={H - padB - scale(n)} stroke={GRID} strokeWidth={1} />
           <text x={padL - 6} y={H - padB - scale(n) + 3} textAnchor="end" fontSize={10} fill={INK_MUTED}>
@@ -160,7 +199,7 @@ function YearChart({ data }: { data: { year: number; victor: Victor | null; coun
         const segs = [
           { v: s.allied, c: ALLIED, l: 'Victoria aliada' },
           { v: s.axis, c: AXIS, l: 'Victoria del Eje' },
-          { v: s.other, c: NEUTRAL, l: 'Otro resultado' },
+          { v: s.other, c: NEUTRAL, l: 'Otro o sin dato' },
         ].filter((seg) => seg.v > 0);
         return (
           <g key={s.year}>
@@ -183,7 +222,7 @@ function YearChart({ data }: { data: { year: number; victor: Victor | null; coun
           </g>
         );
       })}
-      <line x1={padL} y1={H - padB} x2={W} y2={H - padB} stroke="#383835" strokeWidth={1} />
+      <line x1={padL} y1={H - padB} x2={W} y2={H - padB} stroke={AXIS_LINE} strokeWidth={1} />
     </svg>
   );
 }

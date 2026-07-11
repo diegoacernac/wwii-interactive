@@ -4,6 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WWII Interactive — Plataforma de la Segunda Guerra Mundial</title>
+    <script>
+      // Aplica el tema antes de renderizar para evitar el destello de tema incorrecto.
+      (function () {
+        var q = new URLSearchParams(location.search).get('theme');
+        var t = q === 'light' || q === 'dark' ? q : localStorage.getItem('theme');
+        if (t !== 'light' && t !== 'dark') {
+          t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        }
+        if (q === 'light' || q === 'dark') localStorage.setItem('theme', q);
+        document.documentElement.dataset.theme = t;
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

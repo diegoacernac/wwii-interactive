@@ -54,6 +54,7 @@ export interface Battle {
   strategicImportance: string | null;
   narrative: string | null;
   narrativeSourceUrl: string | null;
+  imageUrl: string | null;
   source: string;
 }
 
